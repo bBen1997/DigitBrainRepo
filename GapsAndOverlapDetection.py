@@ -240,12 +240,14 @@ def main():
     print(len(resultGapsRect))
   
 
-if __name__ == '__main__':
+#if __name__ == '__main__':
 
     # if len(sys.argv) != 2:
     #     print("PLease call script with input image path")
     #     exit()
-    main()
+   # main()
+def hello():
+    print("hello")
    
 
 
