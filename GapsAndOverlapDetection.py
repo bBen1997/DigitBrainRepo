@@ -1,8 +1,6 @@
 import cv2
 import numpy as np
 import random
-import sys
-import os
 import operator
 #Variable for filtering noise lines
 minLineLength=5
@@ -17,22 +15,13 @@ def findMinMaxXPointsInContour(contour):
 
 
 #Detect overlap defect regions on image
-def detectOverlapsOnImage(inputImagePath):
-    print("here")
-
+def detectOverlapsOnImage(inputImage):
     resultOverlapsRect = []
     #Read image
-
-    # Read the image data from the file
-    with open('/app/image_data.bin', 'rb') as file:
-        image_data = file.read()
-
-    # Use OpenCV to process the image data
-    image = cv2.imdecode(np.frombuffer(image_data, dtype=np.uint8), cv2.IMREAD_COLOR)
-
+    nparr = np.frombuffer(inputImage, np.uint8)
+    image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
     height, width, channels = image.shape
-          
-    
+           
     imageInitState = image.copy()
     #gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     #edged = cv2.Canny(gray, 120, 150)    
@@ -55,7 +44,7 @@ def detectOverlapsOnImage(inputImagePath):
                 image_res[y,x] = [0,0,0]
 
     #cv2.imshow("IRes", image_res)
-    #cv2.waitKey(1)
+    cv2.waitKey(1)
        
     #Find overlap region on mask with contour analyze
     image_res_gray = cv2.cvtColor(image_res,cv2.COLOR_BGR2GRAY)
@@ -77,10 +66,10 @@ def detectOverlapsOnImage(inputImagePath):
         cv2.drawContours(image_res, [contour], 0, color, 5)
 
     #Show result images 
-    #cv2.imshow("FinalRes", imageInitState) 
-    #cv2.imshow("Window",image_res_gray)
-    #cv2.imshow("Window1",image_res)
-    #cv2.waitKey(10)
+    # cv2.imshow("FinalRes", imageInitState) 
+    # cv2.imshow("Window",image_res_gray)
+    # cv2.imshow("Window1",image_res)
+    cv2.waitKey(10)
     return resultOverlapsRect
 
 
@@ -112,13 +101,11 @@ def intersectsBox(box1, box2):
 
 
 #Function for gaps detection
-def detectGapsOnImage(inputImagePath):
+def detectGapsOnImage(inputImage):
     resultGapsRect = []
-    with open('/app/image_data.bin', 'rb') as file:
-        image_data = file.read()
-        
-    image = cv2.imdecode(np.frombuffer(image_data, dtype=np.uint8), cv2.IMREAD_COLOR)
-
+    #Read image
+    nparr = np.frombuffer(inputImage, np.uint8)
+    image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
     height, width, channels = image.shape
     imageInitState = image.copy()
     #Convert grayscale                
@@ -168,7 +155,7 @@ def detectGapsOnImage(inputImagePath):
     # cv2.imshow("FinalRes", imageInitState)
     # cv2.imshow("Window",image_res_gray)
     # cv2.imshow("Window1",image_res)
-    # cv2.waitKey(10)
+    cv2.waitKey(10)
     return resultGapsRect
 
 
@@ -195,18 +182,19 @@ def do_overlap(box1, box2):
 
 
 #Main function, call gaps and overlap detection
-def main():
+def main(inputImage):
        
-    inputImagePath = '/app/image_data.bin'      
-    resultGapsRect = detectGapsOnImage(inputImagePath)
-    resultOverlapsRect = detectOverlapsOnImage(inputImagePath)
-    # pathname, extension = os.path.splitext(inputImagePath)
+    #inputImagePath = sys.argv[1]         
+    resultGapsRect = detectGapsOnImage(inputImage)
+    resultOverlapsRect = detectOverlapsOnImage(inputImage)
+    #pathname, extension = os.path.splitext(inputImagePath)
     # resImageFilePath = pathname + "_res" + extension
     # resTxtFilePathOver = pathname + "_overlap.txt"
     # resTxtFilePathGaps = pathname + "_gaps.txt"
-    resTxtFilePath = '/app/testResult' + ".txt"
-    #imgRes = cv2.imread(inputImagePath)
-    #Filtere results and write into txt files and output images.     
+    resTxtFilePath = "DefectResult" + ".txt"
+
+    resultString = ""
+    #Filter results and write into txt files and output images.     
     resultGapsRectFilt = []
     for i in range(len(resultGapsRect)):
         print("Start gaps vector ")
@@ -221,33 +209,25 @@ def main():
         if  not(isFoundInterRect):               
             resultGapsRectFilt.append(resultGapsRect[i])
 
-    with open(resTxtFilePath, 'w') as f:
-        
-        for i in range(len(resultOverlapsRect)):
-            #imgRes = cv2.rectangle(imgRes,(resultOverlapsRect[i][0],resultOverlapsRect[i][1]),(resultOverlapsRect[i][0]+resultOverlapsRect[i][2],resultOverlapsRect[i][1]+resultOverlapsRect[i][3]),(0,255,0),5)            
-            finalStrForOutput = '[O,' + str(resultOverlapsRect[i][0]) + ',' + str(resultOverlapsRect[i][1]) + ',' + str(resultOverlapsRect[i][2]) + ',' + str(resultOverlapsRect[i][3]) + ']' + ' '
-            f.write(finalStrForOutput) 
-    
-    
-       
-        for i in range(len(resultGapsRectFilt)):   
-            #imgRes = cv2.rectangle(imgRes,(resultGapsRectFilt[i][0],resultGapsRectFilt[i][1]),(resultGapsRectFilt[i][0]+resultGapsRectFilt[i][2],resultGapsRectFilt[i][1]+resultGapsRectFilt[i][3]),(0,255,255),5)                     
-            finalStrForOutput = '[G,' + str(resultGapsRectFilt[i][0]) + ',' + str(resultGapsRectFilt[i][1]) + ',' + str(resultGapsRectFilt[i][2]) + ',' + str(resultGapsRectFilt[i][3]) + ']' + ' '
-            f.write(finalStrForOutput)
-    f.close()    
-    #cv2.imwrite(resImageFilePath, imgRes)
-    print("Detected gaps count")
-    print(len(resultGapsRect))
-  
+    for i in range(len(resultOverlapsRect)):
+        #imgRes = cv2.rectangle(imgRes,(resultOverlapsRect[i][0],resultOverlapsRect[i][1]),(resultOverlapsRect[i][0]+resultOverlapsRect[i][2],resultOverlapsRect[i][1]+resultOverlapsRect[i][3]),(0,255,0),5)            
+        finalStrForOutput = '[O,' + str(resultOverlapsRect[i][0]) + ',' + str(resultOverlapsRect[i][1]) + ',' + str(resultOverlapsRect[i][2]) + ',' + str(resultOverlapsRect[i][3]) + ']' + ' '
+        resultString += finalStrForOutput 
 
-#if __name__ == '__main__':
 
-    # if len(sys.argv) != 2:
-    #     print("PLease call script with input image path")
-    #     exit()
-   # main()
-def hello():
-    print("hello")
+    
+    for i in range(len(resultGapsRectFilt)):   
+        #imgRes = cv2.rectangle(imgRes,(resultGapsRectFilt[i][0],resultGapsRectFilt[i][1]),(resultGapsRectFilt[i][0]+resultGapsRectFilt[i][2],resultGapsRectFilt[i][1]+resultGapsRectFilt[i][3]),(0,255,255),5)                     
+        finalStrForOutput = '[G,' + str(resultGapsRectFilt[i][0]) + ',' + str(resultGapsRectFilt[i][1]) + ',' + str(resultGapsRectFilt[i][2]) + ',' + str(resultGapsRectFilt[i][3]) + ']' + ' '
+        resultString += finalStrForOutput 
+
+    return resultString;
+# if __name__ == '__main__':
+
+#     if len(sys.argv) != 2:
+#         print("PLease call script with input image path")
+#         exit()
+#     main(sys.argv[1:])
    
 
 
