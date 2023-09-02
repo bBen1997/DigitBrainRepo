@@ -84,7 +84,7 @@ def main(inputImage):
     for start, end in clusters[largest_cluster_key]:
         y_coordinate = start[1]
         width_of_gap = end[0] - start[0]
-        output_string += "[{}, {}] ".format(y_coordinate, width_of_gap)
+        output_string += "[{},{}] ".format(y_coordinate, width_of_gap)
 
     print("Output String:", output_string) 
     return output_string
