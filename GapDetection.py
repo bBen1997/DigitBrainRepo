@@ -41,7 +41,7 @@ def main(inputImage):
     lines = []
 
     # Loop from top to bottom every 5 pixels
-    for y in range(0, mask.shape[0], 5):
+    for y in range(0, mask.shape[0], 10):
         row = mask[y, :]
         indices = np.where(row == 255)[0]
 
