@@ -58,7 +58,7 @@ def main(inputImage):
 
     # Cluster midpoints based on their X coordinate
     clusters = {}
-    threshold = 10
+    threshold = 15
 
     for midpoint, line in zip(midpoints, lines):
         added_to_cluster = False
